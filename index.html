@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Team App</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F7A4D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Team App">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+/* Layout: one phone-width column, sticky header and bottom tab bar, centered on larger screens. */
+:root{
+  --bg:#F3F5F3; --surface:#FFFFFF; --ink:#14211A; --muted:#55655B; --line:#DDE3DF;
+  --accent:#1F7A4D; --accent-ink:#FFFFFF; --accent-soft:#E3F1E9; --accent-soft-ink:#14502F;
+  --warn-soft:#FFF3D6; --warn-ink:#6B4200; --warn-line:#C28A00;
+  --info-soft:#E1ECFA; --info-ink:#14385F; --red-soft:#FBE3E0; --red-ink:#7A1A10;
+  --neutral-soft:#E8ECE9; --yellow:#F2C230; --yellow-ink:#14211A; --red:#B3261E; --info:#14385F;
+  --field:#6E7F75; --pitch:#2F7D4F; --soft:#E6EBE7;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1511; --surface:#17211B; --ink:#E8EFEA; --muted:#9DAFA3; --line:#2A372F;
+    --accent:#3FB57A; --accent-ink:#06140C; --accent-soft:#1D3A2B; --accent-soft-ink:#A9E3C4;
+    --warn-soft:#3A2E0F; --warn-ink:#F2D38A; --warn-line:#D9A520;
+    --info-soft:#1B2D44; --info-ink:#B8D3F2; --red-soft:#3F1D1A; --red-ink:#F5B8B1;
+    --neutral-soft:#243029; --info:#3C6FB0; --field:#7C8F84; --pitch:#1E5A38; --soft:#26332B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1511; --surface:#17211B; --ink:#E8EFEA; --muted:#9DAFA3; --line:#2A372F;
+  --accent:#3FB57A; --accent-ink:#06140C; --accent-soft:#1D3A2B; --accent-soft-ink:#A9E3C4;
+  --warn-soft:#3A2E0F; --warn-ink:#F2D38A; --warn-line:#D9A520;
+  --info-soft:#1B2D44; --info-ink:#B8D3F2; --red-soft:#3F1D1A; --red-ink:#F5B8B1;
+  --neutral-soft:#243029; --info:#3C6FB0; --field:#7C8F84; --pitch:#1E5A38; --soft:#26332B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.4;
+  padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+button,input{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--warn-line);outline-offset:2px}
+.app{max-width:430px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column;background:var(--bg)}
+.banner{background:var(--warn-soft);color:var(--warn-ink);font-size:12px;font-weight:600;padding:6px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.banner .btn{min-height:44px;border-color:var(--warn-ink);background:var(--surface);color:var(--ink)}
+.dsel{min-height:40px;border:none;border-radius:12px;padding:0 8px;background:var(--bg);color:var(--ink);font-size:16px;max-width:150px}
+.top{background:var(--surface);border-bottom:1px solid var(--line);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.top h1{margin:0;font-size:20px;letter-spacing:-0.01em;line-height:1.2}
+.pill{flex:none;background:var(--accent-soft);color:var(--accent-soft-ink);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px}
+main{flex:1;min-width:0;padding:10px;display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.big{font-size:24px;font-weight:700;line-height:1.2}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.c-ok{background:var(--accent-soft);color:var(--accent-soft-ink)}
+.c-wait{background:var(--warn-soft);color:var(--warn-ink)}
+.c-warn{background:var(--warn-soft,#FBEFD5);color:var(--warn-ink)}
+.c-no{background:var(--neutral-soft);color:var(--ink)}
+.c-dark{background:var(--ink);color:var(--bg)}
+.c-goal{background:var(--accent-soft);color:var(--accent-soft-ink)}
+.c-assist{background:var(--info-soft);color:var(--info-ink)}
+.c-yellow{background:var(--warn-soft);color:var(--warn-ink)}
+.c-red{background:var(--red-soft);color:var(--red-ink)}
+.btn{min-height:34px;padding:0 12px;border-radius:10px;border:none;background:var(--soft);color:var(--ink);font-weight:600;font-size:14px}
+.btn.on{background:var(--accent);color:var(--accent-ink)}
+.btn.on-dark{background:var(--ink);color:var(--bg)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);min-height:38px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.link{border:none;background:none;color:var(--accent);padding:0 4px}
+.two{display:flex;gap:8px}.two>*{flex:1}
+.stats4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stats4 b{display:block;font-size:26px;color:var(--accent);line-height:1.1}
+.stats4 span{font-size:12px;color:var(--muted)}
+.date{flex:none;width:56px;text-align:center;background:var(--bg);border-radius:12px;padding:6px 0;display:flex;flex-direction:column}
+.date em{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.date b{font-size:16px;line-height:1.2}
+.ev{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ev>div:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.chev{flex:none;align-self:center;font-size:24px;color:var(--muted)}
+.tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wrap{display:flex;gap:8px;flex-wrap:wrap}
+.note{background:var(--accent-soft);color:var(--accent-soft-ink);font-size:13px;padding:6px 10px;border-radius:12px}
+.msgs{display:flex;flex-direction:column;gap:10px;flex:1}
+.msg{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.msg.me{align-items:flex-end}
+.msg small{font-size:12px;font-weight:600;color:var(--muted)}
+.msg span{max-width:290px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14px;overflow-wrap:anywhere}
+.msg.me span{background:var(--accent-soft)}
+.compose{display:flex;gap:8px}
+.compose input{flex:1;min-width:0;min-height:38px;border:none;border-radius:12px;padding:0 12px;background:var(--bg)}
+.plr{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px;min-width:0}
+.num{flex:none;width:34px;height:34px;border-radius:999px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.num.bench{background:var(--neutral-soft);color:var(--ink)}
+.plr .nm{flex:1;min-width:0;font-weight:600}
+.tbl{overflow-x:auto}
+.srow{display:grid;grid-template-columns:28px minmax(80px,1fr) 38px 26px 26px 26px 26px;gap:6px;align-items:center;font-variant-numeric:tabular-nums;min-width:340px}
+.srow>:nth-child(n+3){text-align:right}
+.srow.h{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;padding:0 10px}
+.srow.b{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:14px}
+.clock{background:var(--ink);color:var(--bg);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.clock .t{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.clock .btn{border-color:var(--bg);background:var(--bg);color:var(--ink)}
+.clock .btn.ghost{background:transparent;color:var(--bg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+.clock hr{border:none;border-top:1px solid color-mix(in srgb,var(--bg) 30%,transparent);margin:0;width:100%}
+.gp{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:4px 10px;text-align:left;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.gp.sel{background:var(--warn-soft);border-color:var(--warn-line)}
+.gp .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.gp .mid .l{display:flex;justify-content:space-between;gap:8px}
+.gp .time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.bar{display:block;height:6px;border-radius:3px;background:var(--line)}
+.bar i{display:block;height:6px;border-radius:3px;background:var(--accent)}
+.act{background:var(--surface);border:2px solid var(--warn-line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:8px}
+.act .four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.act .four button{min-height:36px;border-radius:10px;border:none;font-size:13px;font-weight:700}
+.log{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 10px}
+.log small{flex:none;width:34px;font-variant-numeric:tabular-nums;font-weight:600;color:var(--muted)}
+.log span:last-child{flex:1;min-width:0;font-size:14px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+.fld input,.fld select{width:100%;min-height:36px;border:none;border-radius:12px;padding:0 12px;background:var(--bg);color:var(--ink);font-size:16px;font-weight:400}
+.fchip{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface);max-width:290px;min-width:0}
+.msg a{color:var(--accent);text-decoration:underline;overflow-wrap:anywhere}
+.emo-b{min-width:44px;min-height:44px;background:none;border:none;border-radius:12px;font-size:22px;line-height:1;padding:0}
+.emo-b.on{background:var(--accent-soft)}
+.bub{display:flex;flex-direction:column;gap:4px;align-items:inherit;max-width:100%;cursor:pointer}
+.msg.me .bub{align-items:flex-end}
+.msg.sel span{outline:2px solid var(--accent)}
+.msgbar{align-items:center;gap:2px}
+.quote{max-width:290px;padding:6px 10px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:8px;font-size:12px;overflow-wrap:anywhere}
+.rx{display:flex;gap:4px;flex-wrap:wrap}
+.rxc{padding:2px 8px;border:none;border-radius:999px;background:var(--surface);font-size:14px}
+.replybar{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:6px 10px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:8px}
+.attach{flex:none;min-width:44px;font-size:20px;font-weight:700}
+.num[data-pid],.slot.on{touch-action:none;cursor:grab}
+.dghost{position:fixed;z-index:50;pointer-events:none;width:46px;height:46px;border-radius:999px;background:#fff;color:#14211A;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 16px rgba(0,0,0,.35);transform:translate(-50%,-50%)}
+.list{display:flex;flex-direction:column}
+.lrow{display:flex;align-items:flex-start;gap:10px;padding:4px 0;border-bottom:1px solid var(--line);min-width:0}
+.lrow:last-child{border-bottom:none}
+.lrow>span:first-child{flex:none;width:96px;color:var(--muted);font-size:14px;font-weight:600;padding-top:9px}
+.lrow .lv{flex:1;min-width:0;display:flex;flex-direction:column}
+.lrow input,.lrow select,.lrow textarea{width:100%;min-width:0;border:none!important;background:none!important;padding:8px 0;min-height:36px;font-size:16px;font-family:inherit;color:var(--ink);line-height:1.35;resize:none;overflow:hidden;border-radius:0}
+.lrow .cnt{font-size:12px;color:var(--muted);align-self:flex-end}
+.lchk{display:flex;align-items:center;gap:10px;min-height:38px;border-bottom:1px solid var(--line);font-size:15px}
+.lchk:last-child{border-bottom:none}
+.lchk input{width:20px;height:20px;accent-color:var(--accent)}
+.btn.on-info{background:var(--info);color:#fff}
+.rsv{display:flex;gap:6px}
+.rsv .btn{flex:1;min-height:30px;font-size:13px;padding:0 4px;border-radius:9px}
+.crow{display:flex;align-items:center;gap:12px;width:100%;padding:10px 4px;border:none;border-bottom:1px solid var(--line);background:none;color:var(--ink);text-align:left;min-width:0}
+.crow:last-child{border-bottom:none}
+.av{flex:none;width:40px;height:40px;border-radius:999px;background:var(--accent-soft);color:var(--accent-soft-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.cm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cm .cp{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.compose{align-items:flex-end}
+.compose textarea:focus{outline:2px solid var(--accent);outline-offset:0}
+.compose textarea{flex:1;min-width:0;min-height:44px;max-height:132px;border:none;border-radius:14px;padding:11px 12px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:16px;line-height:1.35;resize:none;overflow-y:auto}
+.compose .btn.attach,.compose .btn.primary{min-height:44px}
+.stack{display:flex;flex-direction:column;gap:8px}
+[hidden]{display:none!important}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--bg);padding:3px;border-radius:12px}
+.seg button{min-height:34px;border:none;border-radius:10px;background:none;font-weight:600;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv:last-child{border-bottom:none}
+.kv b{text-align:right;min-width:0;overflow-wrap:anywhere}
+.nchip{min-height:30px;padding:0 10px;border-radius:999px;border:none;background:var(--soft);font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center}
+button.nchip{cursor:pointer}
+.mimg{display:block;width:100%;max-width:240px;height:auto;border-radius:14px;border:1px solid var(--line)}
+.fld textarea{width:100%;min-height:36px;border:none;border-radius:12px;padding:6px 10px;background:var(--bg);color:var(--ink);font-family:inherit;font-size:16px;font-weight:400;line-height:1.35;resize:none;overflow:hidden}
+.fld .cnt{font-weight:400;font-size:12px;color:var(--muted);align-self:flex-end}
+main,.top{overflow-wrap:anywhere}
+.chk{display:flex;align-items:center;gap:10px;min-height:44px}
+.chk input{width:22px;height:22px;accent-color:var(--accent)}
+.compose input{font-size:16px}
+.pitch{position:relative;width:100%;aspect-ratio:3/4;background:var(--pitch);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.pl{position:absolute;display:block;border:2px solid rgba(255,255,255,.55)}
+.pl-mid{left:0;right:0;top:50%;border-width:2px 0 0}
+.pl-circ{left:50%;top:50%;width:22%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%}
+.pl-box.t{left:25%;right:25%;top:0;height:13%;border-top:0}
+.pl-box.b{left:25%;right:25%;bottom:0;height:13%;border-bottom:0}
+.slot{position:absolute;transform:translate(-50%,-50%);width:56px;min-height:44px;background:none;border:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px}
+.slot .c{width:40px;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:2px dashed rgba(255,255,255,.9);color:#fff}
+.slot.on .c{background:#fff;color:#14211A;border:2px solid #fff}
+.slot.sel .c{outline:3px solid var(--yellow);outline-offset:2px}
+.slot .n{font-size:11px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);border-radius:6px;padding:1px 5px;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+nav{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{flex:1;min-height:52px;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted)}
+nav button[aria-current="page"]{color:var(--accent)}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+button.pill{font:inherit;cursor:pointer}
+button:disabled{opacity:.5}
+</style></head><body>
+<div class="app">
+  <header class="top">
+    <div><small id="sub">Team App</small><h1 id="title">Team</h1></div>
+    <button class="pill" id="pill" style="border:none;display:none" data-act="signout">Sign out</button>
+  </header>
+  <main id="main"><p class="muted">Loading…</p></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+window.APP_CONFIG={
+  url:'https://qebkzrsadltkavkvnalk.supabase.co',
+  key:'sb_publishable_LlTpEVtPW8nhq6AHdkylVw_6y5yLYW7'
+};
+
+(function(){
+  'use strict';
+  var sb=window.supabase.createClient(APP_CONFIG.url,APP_CONFIG.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  var S={user:null,member:null,team:null,players:[],guardians:[],edit:null,ed:null,msg:'',err:'',busy:false,sent:'',view:'loading'};
+  var RELS=['Mother','Father','Guardian'];
+  var EMAILRE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  var $=function(id){return document.getElementById(id);};
+  function esc(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function val(id){var e=$(id);return e?e.value.trim():'';}
+  function staff(){return !!S.member&&(S.member.role==='manager'||S.member.role==='coach');}
+  function fld(id,label,v,type,ph){return '<label class="fld"><span>'+label+'</span><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(v)+'" placeholder="'+esc(ph||'')+'"></label>';}
+  function note(){return (S.err?'<div class="note" style="background:var(--red-soft);color:var(--red-ink)">'+esc(S.err)+'</div>':'')+(S.msg?'<div class="note">'+esc(S.msg)+'</div>':'');}
+  function fail(e,where){S.err=(where?where+': ':'')+(e&&e.message?e.message:String(e));S.msg='';}
+
+  /* ---------- data ---------- */
+  async function loadAll(){
+    var m=await sb.from('team_members').select('team_id,role,display_name').eq('user_id',S.user.id).limit(1);
+    if(m.error)throw m.error;
+    if(!m.data.length){S.member=null;S.view='create';return;}
+    S.member=m.data[0];
+    var t=await sb.from('teams').select('id,name,season').eq('id',S.member.team_id).single();if(t.error)throw t.error;S.team=t.data;
+    var p=await sb.from('players').select('id,name,number,position').eq('team_id',S.team.id).order('number',{ascending:true});if(p.error)throw p.error;S.players=p.data;
+    var g=await sb.from('guardians').select('id,player_id,user_id,relation,name,email,phone,invite_status').order('created_at',{ascending:true});if(g.error)throw g.error;S.guardians=g.data;
+    S.view='team';
+  }
+  function gOf(pid){return S.guardians.filter(function(g){return g.player_id===pid;});}
+  function mine(pid){return S.user&&gOf(pid).some(function(g){return g.user_id===S.user.id;});}
+
+  /* ---------- views ---------- */
+  function loginView(){
+    return '<div class="card"><b>Sign in</b><span class="muted small">Enter your email. We send you a one-tap sign-in link, so there is no password to remember. Parents: use the email address the team manager has for you.</span>'+
+      fld('f-login','Email',S.sentTo||'','email','name@example.com')+
+      '<button class="btn primary" data-act="login"'+(S.busy?' disabled':'')+'>Send me a sign-in link</button></div>'+
+      (S.sent?'<div class="note">'+esc(S.sent)+'</div>':'')+note();
+  }
+  function createView(){
+    return '<div class="card"><b>Create your team</b><span class="muted small">You become the team manager. You can add players and invite their parents next.</span>'+
+      fld('f-tname','Team name',S.team_name||'','text','e.g. Tigers U10')+fld('f-season','Season',S.season||'Spring 2027','text','Spring 2027')+fld('f-myname','Your name',S.my_name||'','text','Full name')+
+      '<button class="btn primary" data-act="createteam"'+(S.busy?' disabled':'')+'>Create team</button></div>'+
+      '<span class="muted small">If you are a parent, the team manager must add your email first. Then sign in with that email and your child appears here.</span>'+note();
+  }
+  function chip(p){
+    var g=gOf(p.id);if(!staff())return mine(p.id)?'<span class="chip c-ok">Your child</span>':'';
+    var j=g.filter(function(x){return x.invite_status==='joined';}).length,iv=g.filter(function(x){return x.invite_status==='invited';}).length,no=g.filter(function(x){return x.invite_status==='none'&&x.email;}).length;
+    if(!g.length)return '<span class="chip c-no">No parent</span>';
+    if(no)return '<span class="chip c-warn">Not invited</span>';
+    if(iv&&!j)return '<span class="chip c-warn">Invited</span>';
+    if(iv)return '<span class="chip c-warn">'+j+' of '+g.length+' joined</span>';
+    return '<span class="chip c-ok">'+j+' joined</span>';
+  }
+  function teamView(){
+    var st=staff();
+    var rows=S.players.map(function(p){
+      var can=st||mine(p.id);
+      return '<'+(can?'button':'div')+' class="plr" style="width:100%;text-align:left"'+(can?' data-act="edit" data-id="'+p.id+'"':'')+'><span class="num">'+esc(p.number==null?'':p.number)+'</span><span class="nm">'+esc(p.name)+(st&&p.position?' <span class="muted small" style="font-weight:500">'+esc(p.position)+'</span>':'')+'</span>'+chip(p)+(can?'<span class="muted" aria-hidden="true">›</span>':'')+'</'+(can?'button':'div')+'>';
+    }).join('');
+    return '<div class="row"><span class="muted small">'+S.players.length+' players. '+(st?'Tap a player to edit.':'You can edit your own child.')+'</span>'+(st?'<button class="btn primary" style="flex:none;white-space:nowrap" data-act="edit" data-id="new">Add player</button>':'')+'</div>'+
+      (rows||'<div class="note">No players yet.'+(st?' Tap Add player to start the roster.':'')+'</div>')+
+      (st?'<button class="btn" data-act="invall">Send invitations to all pending parents</button>':'')+note()+
+      '<span class="muted" style="font-size:12px">Contact details are visible to the coaching staff only. Calendar, chat and game day arrive in the next versions.</span>';
+  }
+  function editView(){
+    var d=S.ed,isNew=S.edit==='new',st=staff();
+    var stl={none:['No invitation yet',''],invited:['Invitation sent','c-warn'],joined:['Joined','c-ok']};
+    var cards=d.gd.map(function(g,i){
+      var s=stl[g.invite_status]||stl.none;
+      return '<div class="card"><div class="row"><select id="g'+i+'-rel" style="width:auto;border:none;background:none;font-weight:700;font-size:15px;padding:0">'+RELS.map(function(x){return '<option'+(g.relation===x?' selected':'')+'>'+x+'</option>';}).join('')+'</select><span class="chip '+s[1]+'" style="margin-left:auto">'+s[0]+'</span></div>'+
+        fld('g'+i+'-name','Name',g.name,'text','Full name')+fld('g'+i+'-email','Email',g.email,'email','name@example.com')+fld('g'+i+'-phone','Phone',g.phone,'tel','(555) 555-5555')+
+        '<div class="two">'+(st&&g.invite_status!=='joined'?'<button class="btn" data-act="ginv" data-id="'+i+'"'+(S.busy?' disabled':'')+'>'+(g.invite_status==='invited'?'Resend invitation':'Send invitation')+'</button>':'')+'<button class="btn" style="color:var(--red-ink)" data-act="gdel" data-id="'+i+'">Remove</button></div></div>';
+    }).join('');
+    return '<button class="btn link" style="align-self:flex-start" data-act="cancel">‹ Back to roster</button>'+
+      '<div class="card"><b>'+(isNew?'New player':esc(d.name||'Player'))+'</b>'+fld('f-name','Name',d.name,'text','Player name')+fld('f-num','Jersey number',d.number,'number','e.g. 10')+
+      (st?fld('f-pos','Position (coaching staff only)',d.position,'text','e.g. MID'):'')+'</div>'+
+      '<span class="eyebrow">Parents and guardians</span><span class="muted small">Add each adult who should have an account. Visible to the coaching staff only. Do not add medical information.</span>'+
+      cards+'<button class="btn" data-act="gadd">+ Add parent or guardian</button>'+note()+
+      '<div class="two"><button class="btn primary" data-act="save"'+(S.busy?' disabled':'')+'>Save</button><button class="btn" data-act="cancel">Cancel</button></div>'+
+      ((!isNew&&st)?'<button class="btn" style="color:var(--red-ink)" data-act="del">'+(S.confirmDel?'Tap again to delete '+esc(d.name):'Delete player')+'</button>':'');
+  }
+  function render(){
+    var v=S.view,main=$('main');
+    $('pill').style.display=S.user?'':'none';
+    $('sub').textContent=S.team?(S.team.name+' · '+S.team.season):'Team App';
+    $('title').textContent=v==='edit'?'Player':v==='create'?'New team':v==='login'?'Welcome':'Team';
+    main.innerHTML=v==='loading'?'<p class="muted">Loading…</p>':v==='login'?loginView():v==='create'?createView():v==='edit'?editView():teamView();
+  }
+
+  /* ---------- form helpers ---------- */
+  function readForm(){
+    var d=S.ed;if(!d)return;
+    d.name=val('f-name');d.number=val('f-num');var fp=$('f-pos');if(fp)d.position=fp.value.trim();
+    d.gd.forEach(function(g,i){
+      var r=$('g'+i+'-rel');if(r)g.relation=r.value;
+      var n=$('g'+i+'-name');if(n)g.name=n.value.trim();
+      var e=$('g'+i+'-email');if(e){var ne=e.value.trim();if(ne.toLowerCase()!==(g.email||'').toLowerCase()&&g.id){g.invite_status='none';g.user_id=null;}g.email=ne;}
+      var ph=$('g'+i+'-phone');if(ph)g.phone=ph.value.trim();
+    });
+  }
+  function validate(){
+    var d=S.ed;if(!d.name)return 'Enter the player name.';
+    for(var i=0;i<d.gd.length;i++){var g=d.gd[i];if(g.email&&!EMAILRE.test(g.email))return 'Check the email of '+(g.name||g.relation.toLowerCase())+'.';}
+    return '';
+  }
+  async function persist(){
+    var d=S.ed,num=parseInt(d.number,10);if(isNaN(num))num=null;var pid=S.edit==='new'?null:S.edit;
+    var row={name:d.name,number:num};if(staff())row.position=d.position||'';
+    if(!pid){row.team_id=S.team.id;var r=await sb.from('players').insert(row).select('id').single();if(r.error)throw r.error;pid=r.data.id;S.edit=pid;}
+    else{var u=await sb.from('players').update(row).eq('id',pid);if(u.error)throw u.error;}
+    var keep=d.gd.filter(function(g){return g.name||g.email||g.phone;});
+    var old=gOf(pid).map(function(g){return g.id;});
+    var keepIds=keep.filter(function(g){return g.id;}).map(function(g){return g.id;});
+    var gone=old.filter(function(id){return keepIds.indexOf(id)<0;});
+    if(gone.length){var x=await sb.from('guardians').delete().in('id',gone);if(x.error)throw x.error;}
+    for(var i=0;i<keep.length;i++){
+      var g=keep[i],gr={relation:g.relation,name:g.name,email:g.email,phone:g.phone};
+      if(g.id){gr.invite_status=g.email?g.invite_status:'none';if(g.user_id===null)gr.user_id=null;var y=await sb.from('guardians').update(gr).eq('id',g.id);if(y.error)throw y.error;}
+      else{gr.player_id=pid;var z=await sb.from('guardians').insert(gr).select('id').single();if(z.error)throw z.error;g.id=z.data.id;}
+    }
+    d.gd=keep;
+    return pid;
+  }
+  function startEdit(id){
+    S.err='';S.msg='';S.confirmDel=false;S.edit=id;
+    if(id==='new')S.ed={name:'',number:'',position:'',gd:[{relation:'Mother',name:'',email:'',phone:'',invite_status:'none'}]};
+    else{var p=S.players.filter(function(x){return x.id===id;})[0];S.ed={name:p.name,number:p.number==null?'':p.number,position:p.position||'',gd:gOf(id).map(function(g){return Object.assign({},g);})};}
+    S.view='edit';
+  }
+  async function sendInvite(email){
+    var r=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
+    if(r.error)throw r.error;
+  }
+
+  /* ---------- actions ---------- */
+  async function act(a,id){
+    S.err='';S.msg='';
+    try{
+      if(a==='login'){
+        var em=val('f-login');S.sentTo=em;
+        if(!EMAILRE.test(em)){S.err='Enter a valid email.';return render();}
+        S.busy=true;render();
+        var r=await sb.auth.signInWithOtp({email:em,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}});
+        S.busy=false;if(r.error)throw r.error;
+        S.sent='Check your email: we sent a sign-in link to '+em+'. Open it on this phone.';
+      }else if(a==='signout'){await sb.auth.signOut();S.user=null;S.team=null;S.member=null;S.view='login';S.sent='';
+      }else if(a==='createteam'){
+        S.team_name=val('f-tname');S.season=val('f-season');S.my_name=val('f-myname');
+        if(!S.team_name||!S.my_name){S.err='Enter the team name and your name.';return render();}
+        S.busy=true;render();
+        var c=await sb.rpc('create_team',{team_name:S.team_name,team_season:S.season,my_name:S.my_name});
+        S.busy=false;if(c.error)throw c.error;await loadAll();
+      }else if(a==='edit'){startEdit(id==='new'?'new':id);
+      }else if(a==='cancel'){S.ed=null;S.edit=null;S.view='team';
+      }else if(a==='gadd'){readForm();S.ed.gd.push({relation:S.ed.gd.length?'Father':'Mother',name:'',email:'',phone:'',invite_status:'none'});
+      }else if(a==='gdel'){readForm();S.ed.gd.splice(parseInt(id,10),1);
+      }else if(a==='save'){
+        readForm();var v=validate();if(v){S.err=v;return render();}
+        S.busy=true;render();await persist();S.busy=false;await loadAll();S.ed=null;S.edit=null;S.view='team';
+      }else if(a==='ginv'){
+        readForm();var v2=validate();if(v2){S.err=v2;return render();}
+        var gi=parseInt(id,10),g=S.ed.gd[gi];
+        if(!g.email){S.err='Add an email first.';return render();}
+        S.busy=true;render();
+        await persist();
+        g=S.ed.gd.filter(function(x){return x.email===g.email;})[0];
+        await sendInvite(g.email);
+        var mi=await sb.rpc('mark_invited',{g:g.id});if(mi.error)throw mi.error;
+        g.invite_status='invited';S.busy=false;
+        S.msg='Invitation sent to '+g.email+'. They get a one-tap sign-in link and then see their child.';
+        await refreshLists();
+      }else if(a==='invall'){
+        var pend=S.guardians.filter(function(x){return x.email&&x.invite_status==='none';}),n=0;
+        S.busy=true;render();
+        for(var k=0;k<pend.length;k++){await sendInvite(pend[k].email);var m2=await sb.rpc('mark_invited',{g:pend[k].id});if(m2.error)throw m2.error;n++;}
+        S.busy=false;await loadAll();S.msg=n?n+' invitation'+(n>1?'s':'')+' sent.':'No pending invitations. Add parent emails first.';
+      }else if(a==='del'){
+        if(!S.confirmDel){S.confirmDel=true;}
+        else{var dd=await sb.from('players').delete().eq('id',S.edit);if(dd.error)throw dd.error;await loadAll();S.ed=null;S.edit=null;S.view='team';S.confirmDel=false;}
+      }
+    }catch(e){S.busy=false;fail(e);}
+    render();
+  }
+  async function refreshLists(){
+    var g=await sb.from('guardians').select('id,player_id,user_id,relation,name,email,phone,invite_status').order('created_at',{ascending:true});
+    if(!g.error)S.guardians=g.data;
+  }
+  document.addEventListener('click',function(ev){
+    var el=ev.target.closest('[data-act]');if(!el||el.disabled)return;
+    var id=el.getAttribute('data-id');
+    act(el.getAttribute('data-act'),id&&/^\d+$/.test(id)&&el.getAttribute('data-act')!=='edit'?id:id);
+  });
+  document.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&ev.target.id==='f-login'){ev.preventDefault();act('login');}});
+
+  /* ---------- start ---------- */
+  async function start(){
+    var s=await sb.auth.getSession();
+    S.user=s.data.session?s.data.session.user:null;
+    if(!S.user){S.view='login';return render();}
+    try{
+      var c=await sb.rpc('claim_invites');if(c.error)throw c.error;
+      await loadAll();
+    }catch(e){fail(e,'Could not load');S.view=S.view==='loading'?'team':S.view;}
+    render();
+  }
+  sb.auth.onAuthStateChange(function(ev,session){
+    if(ev==='SIGNED_IN'&&session&&(!S.user||S.user.id!==session.user.id)){S.user=session.user;start();}
+    if(ev==='SIGNED_OUT'){S.user=null;S.view='login';render();}
+  });
+    start();
+})();
+
+</script>
+</body></html>
